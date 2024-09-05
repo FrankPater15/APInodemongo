@@ -5,7 +5,7 @@ const express=require('express');
 const {dbConnection}=require('../database/config');
 
 //Importar la libreria CORS para permitir las peticiones desde otros dominios
-const CORS=require('cors');
+const cors=require('cors');
 
 //Importar la libreria body-parser para guardar datos del cuerpo de las peticiones HTTP
 const bodyParser=require('body-parser');
