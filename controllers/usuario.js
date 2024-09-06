@@ -1,133 +1,116 @@
-//importamos la funcion response desde el modulo express
-const { response } = require("express")
+const {response} = require('express')
+const bcrypt = require('bcryptjs')
 
-//importa la libreria bcrypts para el cifrado y comparacion de contraseña
-const bcrypt = require('bcrypts')
-
-//importar modelos
-//importa el modelo de usuario desde el modulo de usuario '../modules/usuario'
+//Importar modelos
 const Usuario = require('../modules/usuario')
-//Controlador para la solicitud get a la ruta de usuarios
-const usuarioGet=async (req, resp=response)=>{
-    const body=req.query;//Extrae los parametros de la consulta
-    const{q, nombre, page=1, limit}=req.query;
-    //consulta todos los documentos de la coleccion de Usuarios
-    const usuarios=await Usuario.find();
 
-    resp.json({
-        //devuelve un objeto JSON con los usuarios obtenidos de la base de datos
+const usuariosGet = async (req, res = response) => {
+    const body = req.query
+
+    const {q, nombre, page= 1, limit} = req.query
+
+    const usuarios = await Usuario.find() //Consultar todos los documentos de una colección
+
+    res.json({
         usuarios
     })
 }
 
-//Controlador para la solicitud GET de promedio de usuarios
-const PromGet=async(req, res=response)=>{
-    const body=req.query;//Extrae los parametros de la consulta
-    const{q, nombre, page=1, limit}=req.query;
-    //consulta todos los documentos de la coleccion de Usuarios
-    const usuarios=await Usuario.find();
-    //Muestra cada documento de usuario por consola
+const PromGet = async (req, res = response) => {
+    const body = req.query
+
+    const {q, nombre, page= 1, limit} = req.query
+
+    const usuarios = await Usuario.find() //Consultar todos los documentos de una colección
+
     usuarios.forEach(numero => console.log(numero));
 
     res.json({
-        //Devuelve un mensaje indicando que es el controlador del promedio
-        msg: 'Prom API Controlador',
+        msg: 'Prom API controlador',
         q,
         nombre,
         page,
         limit,
-        //devuelve los usuarios obtenidos de la base de datos
         usuarios
-    });
+    })
 }
 
-//Controlador para la solicitud POST a la ruta de usuarios
-const usuarioPost=async (req, resp=response)=>{
-    const body=req.query;//Extrae los parametros de la consulta
-    let msg=''; //Inicializamos una variable para el mensaje de respuesta
-    //Crea un nievo objeto usuario con los datos del cuerpo de la solicitud
-    const usuario=new Usuario(body);
-    //extraer los datos del cuerpo de la solicitud
-    const {nombre, email, password, rol, estado}=req.body;
-    try{
-        //encripta la contraseña antes de guardarla en la base de datos
-        const salt=bcrypt.genSaltSync(10);//Genera una cadena de cifrado
-        usuario.password=bcrypt.hashSync(password, salt); //Cifra la contraseña con la
-        //cadena(salt) generada
+const usuariosPost = async(req, res = response) => {
+    const body = req.body
 
-        //guarda el usuario en la base de datos
+    //console.log(body)
+    let msg = ''
+
+    const usuario = new Usuario(body)
+
+    const {nombre, email, password, rol, estado} = req.body
+
+    try {
+        //Encriptar la contraseña
+        const salt = bcrypt.genSaltSync(10); //vueltas a encriptar
+        usuario.password = bcrypt.hashSync( password, salt );
+
         await usuario.save()
-        //asigna un mensaje de exito
-        msg='Usuario registrado';
-    }
-    catch(error){
-        console.log(error); //Muestra el error por consola
-        if (error){
-            if(error.name=='ValidationError'){
-                console.log(Object.values(error.errors).map(val=>
-                    //muestra los mensajes de error de validacion
-                    msg=Object.values(error.errors).map(val=>
-                        val.message
-                        //Asigna el mensaje de error a los errores de respuesta
-                    )
-                ))
+        msg = 'Usuario Registrado'
+    } catch (error) {
+        console.log(error)
+        //msg += error.errors.password.message
+        //msg = error
+        if (error) {
+            if (error.name === 'ValidationError') {
+                console.error(Object.values(error.errors).map(val => val.message))
+                msg = Object.values(error.errors).map(val => val.message)
             }
         }
+        
     }
-    console.log(msg);//Muestra el mensaje de respuesta por consola
-
+   
+    console.log(msg)
     res.json({
-        //Devuelve el mensaje de respuesta como un objeto JSON
-        msg:msg
-    });
+        msg: msg
+    })
+
 }
 
-//Controlador para la solicitud PUT a la ruta de usuarios
-const usuarioPut=async (req, res=response)=>{
-    const body=req.query;//Extrae los parametros de la consulta
-    //Muestra los parametros de consulta por consola
-    console.log(log)
-    //extraer los datos del cuerpo de la solicitud
-    const {nombre, email, password, rol, estado}=req.body;
-    
-    //Busca y actualiza un usuario en la base de datos
-    const usuario=await Usuario.findOneAndUpdate({email:email},{nombre:nombre},{rol:rol})
+const usuariosPut = async(req, res = response) => {
+    const body = req.query
 
-    res.json({
-        //Devuelve un mensaje indicando que se actualizo el usuario
-        msg:'Usuario modificado',
-        //devuelve el usuario modificado
-        usuario
-    });
-    }
-
-    //Controlador para la solicitud DELETE a la ruta de usuarios
-const usuarioDelete=async (req, res=response)=>{
-    const body=req.query;//Extrae los parametros de la consulta
-    
-    //Muestra los parametros de consulta por consola
     console.log(body)
-    //extraer los datos del cuerpo de la solicitud
-    const {nombre, email, password, rol, estado}=req.body;
 
-    //Busca y elimina un usuario en la base de datos
-    const usuario=await Usuario.findOneAndDelete({email:email});
+  //  const usuario = new Usuario(body)
 
+    const {nombre, email, password, rol, estado} = req.body
+
+    const usuario = await Usuario.findOneAndUpdate({email: email}, {nombre: nombre, rol: rol})
 
     res.json({
-        //Devuelve un mensaje indicando que se elimino el usuario
-        msg:'Usuario eliminado',
-        //devuelve el usuario modificado
+        msg: 'Usuario Modificado',
         usuario
-    });
+    })
+
 }
 
-//exporto los controladores de las rutas de usuarios para que esten disponibles
-//para otros modulos
-module.exports={
-    usuarioGet,
-    PromGet,
-    usuarioPost,
-    usuarioPut,
-    usuarioDelete
+const usuariosDelete = async(req, res = response) => {
+    const body = req.query
+
+    console.log(body)
+
+
+    const {nombre, email, password, rol, estado} = req.query
+
+    const usuario = await Usuario.findOneAndDelete({email: email})
+
+    res.json({
+        msg: 'Usuario Modificado',
+        usuario
+    })
+
+}
+
+module.exports ={
+    usuariosGet,
+    usuariosPost,
+    usuariosPut,
+    usuariosDelete,
+    PromGet
 }

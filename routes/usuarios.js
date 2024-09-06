@@ -1,23 +1,17 @@
-const {Router} = require('express'); //Exporta la funcion Router de express para crear un
-//router
-const router=Router(); //Crea una instancia de Router
+const { Router} = require('express')
 
-const {usuarioGet, usuarioPost, usuarioPut, usuarioDelete, PromGet}=require('../controllers/usuario')
-//desde el archivo '../controllers/usuario'
+const router = Router()
 
-//Define rutas y asigna controladores a cada ruta para obtener todos los usuarios (GET '/')
-router.get('/', usuarioGet)
+const {usuariosGet, usuariosPost, usuariosPut, usuariosDelete, PromGet} = require('../controllers/usuario')
 
-//Ruta para obtener el promedio de los usuarios(GET '/promedio')
-router.get('/promedio', PromGet);
+router.get('/', usuariosGet)
 
-//Ruta para crear un nuevo usuario(POST '/')
-router.post('/', usuarioPost)
+router.get('/promedio', PromGet)
 
-//Ruta para obtener el promedio de los usuarios(PUT '/')
-router.put('/', usuarioPut)
+router.post('/', usuariosPost)
 
-//Ruta para obtener el promedio de los usuarios(DELETE '/')
-router.delete('/', usuarioDelete)
+router.put('/', usuariosPut)
 
-module.exports= router;
+router.delete('/', usuariosDelete)
+
+module.exports = router
